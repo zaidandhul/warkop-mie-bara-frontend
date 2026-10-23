@@ -1,0 +1,117 @@
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { rememberOrder, submitOrder } from '../api/orders.js'
+import { useCartStore } from '../store/cartStore.js'
+
+const rupiah = (n) => 'Rp' + n.toLocaleString('id-ID')
+
+export default function PaymentPage() {
+  const { tableNumber, lines, total, fee, clear } = useCartStore()
+  const navigate = useNavigate()
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const grandTotal = total() + (lines.length ? fee : 0)
+
+  const handlePay = async (e) => {
+    e.preventDefault()
+    if (!tableNumber || !name.trim() || !lines.length) return
+    setSubmitting(true)
+    setError('')
+    try {
+      const order = await submitOrder({
+        tableNumber: String(tableNumber),
+        customer: { name: name.trim(), phone: phone.trim() },
+        paymentMethod: 'cashier',
+        items: lines.map((line) => ({
+          itemId: line.item.id,
+          qty: line.qty,
+          options: {
+            level: line.opts?.level,
+            variant: line.opts?.variant,
+            toppings: line.opts?.toppings ?? [],
+            note: line.opts?.note ?? '',
+          },
+        })),
+      })
+      rememberOrder(order.id)
+      clear()
+      navigate('/history', { state: { newOrderId: order.id } })
+    } catch (submitError) {
+      setError(submitError.response?.data?.error || 'Pesanan gagal dikirim. Periksa koneksi backend lalu coba lagi.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-md pb-28">
+      <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-bara-line bg-bara-black/95 px-4 py-3 backdrop-blur">
+        <Link to="/view-order" aria-label="Kembali" className="text-xl">←</Link>
+        <h1 className="text-base font-bold">Pembayaran</h1>
+      </header>
+
+      <form onSubmit={handlePay} className="px-4 pt-4">
+        <div className="rounded-lg border border-bara-cyan/50 bg-bara-panel px-3 py-3 text-sm">
+          Dine In · Meja <span className="font-bold text-bara-cyan">{tableNumber ?? 'belum dipilih'}</span>
+          {!tableNumber && <Link to="/order" className="ml-2 font-semibold text-bara-cyan underline">Pilih di halaman menu</Link>}
+        </div>
+
+        <section className="pt-6">
+          <h2 className="mb-3 text-sm font-bold text-bara-cyan">Data Pemesan</h2>
+          <label className="mb-3 block text-sm">
+            Nama Lengkap <span className="text-bara-chili">*</span>
+            <input
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Nama Lengkap"
+              className="mt-1 w-full rounded-lg border border-bara-line bg-bara-panel px-3 py-2 outline-none focus:border-bara-cyan"
+            />
+          </label>
+          <label className="mb-3 block text-sm">
+            No. HP (untuk info promo)
+            <input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="No. HP"
+              className="mt-1 w-full rounded-lg border border-bara-line bg-bara-panel px-3 py-2 outline-none focus:border-bara-cyan"
+            />
+          </label>
+        </section>
+
+        <section className="pt-4">
+          <h2 className="mb-3 text-sm font-bold text-bara-cyan">Metode Pembayaran</h2>
+          <div className="space-y-3">
+            <div className="rounded-lg border border-bara-cyan bg-bara-panel px-3 py-3 text-sm font-medium text-bara-cyan">
+              <p>Bayar di Kasir</p>
+              <p className="mt-1 text-xs font-normal text-white/60">Bayar setelah pesanan dibuat.</p>
+            </div>
+            <div aria-disabled="true" className="rounded-lg border border-bara-line bg-bara-panel/60 px-3 py-3 text-sm text-white/50">
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-medium">QRIS</p>
+                <span className="rounded-full border border-bara-line px-2 py-0.5 text-xs">Belum aktif</span>
+              </div>
+              <p className="mt-1 text-xs">Pembayaran QRIS belum terhubung.</p>
+            </div>
+          </div>
+        </section>
+
+        {error && <p role="alert" className="mt-4 rounded-lg border border-bara-chili/50 bg-bara-chili/10 px-3 py-2 text-sm text-bara-chili">{error}</p>}
+
+        <div className="fixed inset-x-0 bottom-0 mx-auto max-w-md border-t border-bara-line bg-bara-black p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-white/60">Total Pembayaran</p>
+              <p className="text-lg font-bold">{rupiah(grandTotal)}</p>
+            </div>
+            <button type="submit" disabled={submitting || !lines.length || !tableNumber} className="rounded-xl bg-bara-cyan px-6 py-3 font-bold text-black disabled:opacity-50">
+              {submitting ? 'Mengirim…' : 'Buat Pesanan'}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  )
+}
