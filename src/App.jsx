@@ -6,6 +6,7 @@ import OrderSuccessPage from './pages/OrderSuccessPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import HistoryPage from './pages/HistoryPage.jsx'
 import StatusPage from './pages/StatusPage.jsx'
+import PrivacyPage from './pages/PrivacyPage.jsx'
 
 export default function App() {
   const location = useLocation()
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/status/:id" element={<StatusPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/history" element={<HistoryPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
       </Routes>
     </div>
   )
