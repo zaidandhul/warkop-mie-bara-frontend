@@ -30,7 +30,7 @@ export default function ItemSheet({ item, initial = {}, onClose, onSave, topping
         {item.desc && <p className="mt-1 text-xs text-white/60">{item.desc}</p>}
 
         {!noteOnly && item.levels?.length > 0 && (
-          <fieldset className="mt-4">
+          <fieldset className="mt-4" data-testid="level-options">
             <legend className="mb-2 text-sm font-semibold text-bara-cyan">Pilih level pedas</legend>
             <div className="flex gap-2">
               {item.levels.map((l) => (
@@ -56,7 +56,7 @@ export default function ItemSheet({ item, initial = {}, onClose, onSave, topping
         )}
 
         {!noteOnly && item.toppings?.length > 0 && (
-          <fieldset className="mt-4">
+          <fieldset className="mt-4" data-testid="topping-options">
             <legend className="mb-2 text-sm font-semibold text-bara-cyan">Tambahan topping</legend>
             <div className="flex flex-wrap gap-2">
               {toppingsCatalog.filter((t) => item.toppings.includes(t.id)).map((t) => (
@@ -79,6 +79,7 @@ export default function ItemSheet({ item, initial = {}, onClose, onSave, topping
         />
 
         <button
+          data-testid="item-save"
           onClick={() => onSave(opts, priceFor(item, opts, toppingsCatalog, levelPriceStep))}
           className="mt-4 flex w-full items-center justify-between rounded-xl bg-bara-cyan px-4 py-3 font-bold text-black"
         >

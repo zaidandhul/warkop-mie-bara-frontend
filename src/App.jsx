@@ -6,11 +6,17 @@ import OrderSuccessPage from './pages/OrderSuccessPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import HistoryPage from './pages/HistoryPage.jsx'
 import StatusPage from './pages/StatusPage.jsx'
+import PrivacyPage from './pages/PrivacyPage.jsx'
+import AdminLayout from './admin/AdminLayout.jsx'
+import AdminLoginPage from './admin/AdminLoginPage.jsx'
+import AdminOrdersPage from './admin/AdminOrdersPage.jsx'
+import AdminMenuPage from './admin/AdminMenuPage.jsx'
 
 export default function App() {
   const location = useLocation()
   return (
-    <div key={location.pathname} className="route-transition">
+    // Semua halaman /admin berbagi satu key supaya AdminLayout (sesi staf) tidak di-mount ulang.
+    <div key={location.pathname.startsWith('/admin/') && location.pathname !== '/admin/login' ? '/admin' : location.pathname} className="route-transition">
       <Routes location={location}>
         <Route path="/" element={<MenuPage />} />
         <Route path="/order" element={<MenuPage />} />
@@ -20,6 +26,14 @@ export default function App() {
         <Route path="/status/:id" element={<StatusPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/history" element={<HistoryPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+
+        {/* Dashboard staf, terpisah dari alur pelanggan. */}
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminOrdersPage />} />
+          <Route path="menu" element={<AdminMenuPage />} />
+        </Route>
       </Routes>
     </div>
   )

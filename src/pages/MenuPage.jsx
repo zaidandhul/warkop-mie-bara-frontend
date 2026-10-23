@@ -2,23 +2,24 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 import { getMenu } from '../api/orders.js'
-import { useCartStore } from '../store/cartStore.js'
+import { MAX_TABLE_NUMBER, normalizeTableNumber, useCartStore } from '../store/cartStore.js'
 import ItemSheet from '../components/ItemSheet.jsx'
-import { LEVELS, TOPPINGS } from '../data/menu.js'
+import { TOPPINGS } from '../data/menu.js'
 import logo from '../logo.png'
 
 const rupiah = (n) => 'Rp' + n.toLocaleString('id-ID')
-const TABLE_NUMBERS = Array.from({ length: 20 }, (_, index) => String(index + 1))
+const TABLE_NUMBERS = Array.from({ length: MAX_TABLE_NUMBER }, (_, index) => String(index + 1))
 const CONFIGURABLE_FOOD_CATEGORIES = ['varian-mie', 'special', 'bara-nusantara']
 const NOTE_ONLY_CATEGORIES = ['camilan', 'signature-drink', 'all-variant-drink']
 
 function MenuCard({ item, onAdd, categoryId }) {
   return (
-    <div className="w-36 shrink-0">
+    <div className="w-36 shrink-0" data-testid={`menu-card-${item.id}`}>
       <div className="flex h-28 w-36 items-center justify-center rounded-lg bg-bara-panel text-3xl">🍜</div>
       <p className="mt-2 text-sm font-semibold leading-tight">{item.name}</p>
-      <p className="mt-1 text-sm text-white/70">{rupiah(item.price)}</p>
+      <p className="mt-1 text-sm text-white/70" data-testid={`menu-price-${item.id}`}>{rupiah(item.price)}</p>
       <button
+        data-testid={`menu-add-${item.id}`}
         onClick={() => onAdd(item, categoryId)}
         className="mt-2 w-full rounded-lg border border-bara-cyan py-1.5 text-sm font-semibold text-bara-cyan active:bg-bara-cyan active:text-black"
       >
@@ -45,19 +46,8 @@ export default function MenuPage() {
 
   const openItemOptions = (item, categoryId) => {
     const resolvedCategoryId = categoryId ?? item.categoryId
-    if (!CONFIGURABLE_FOOD_CATEGORIES.includes(resolvedCategoryId)) {
-      setSelectedItem({ ...item, categoryId: resolvedCategoryId })
-      return
-    }
-
-    // Pastikan tiga kategori makanan yang memakai level dan topping tetap
-    // memiliki pilihan meski konfigurasi lama dari database belum terisi.
-    setSelectedItem({
-      ...item,
-      categoryId: resolvedCategoryId,
-      levels: item.levels?.length ? item.levels : LEVELS,
-      toppings: item.toppings?.length ? item.toppings : TOPPINGS.map((topping) => topping.id),
-    })
+    // Pilihan level/topping mengikuti database; backend menolak pilihan yang tidak terdaftar di item.
+    setSelectedItem({ ...item, categoryId: resolvedCategoryId })
   }
 
   const loadMenu = useCallback(async () => {
@@ -83,13 +73,9 @@ export default function MenuPage() {
     if (initialTableHandled.current) return
     initialTableHandled.current = true
     const requestedTable = params.get('tableNumber') ?? tableNumber
-    const parsedTable = Number(requestedTable)
-    if (Number.isInteger(parsedTable) && parsedTable >= 1 && parsedTable <= 20) {
-      const normalizedTable = String(parsedTable)
-      if (normalizedTable !== String(tableNumber ?? '')) setTable(normalizedTable)
-    } else if (requestedTable) {
-      setTable(null)
-    }
+    if (requestedTable == null) return
+    const normalizedTable = normalizeTableNumber(requestedTable)
+    if (normalizedTable !== tableNumber) setTable(normalizedTable)
   }, [params, setTable, tableNumber])
 
   const categories = useMemo(() => {
@@ -167,11 +153,12 @@ export default function MenuPage() {
         <label className="mt-3 block rounded-lg border border-bara-cyan/40 bg-bara-cyan/10 px-4 py-3 text-sm">
           <span className="mb-2 block font-semibold text-bara-cyan">Pilih nomor meja</span>
           <select
+            data-testid="table-select"
             value={tableNumber ?? ''}
             onChange={(event) => setTable(event.target.value || null)}
             className="w-full rounded-lg border border-bara-line bg-bara-panel px-3 py-2 text-white outline-none focus:border-bara-cyan"
           >
-            <option value="">Pilih meja 1–20</option>
+            <option value="">Pilih meja 1–{MAX_TABLE_NUMBER}</option>
             {TABLE_NUMBERS.map((number) => <option key={number} value={number}>Meja {number}</option>)}
           </select>
         </label>
@@ -242,6 +229,7 @@ export default function MenuPage() {
       {count() > 0 && createPortal(
         <div className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-md p-4">
           <button
+            data-testid="cart-button"
             onClick={() => navigate('/view-order')}
             className="flex w-full items-center justify-between rounded-xl bg-bara-cyan px-4 py-3 font-bold text-black shadow-lg"
           >

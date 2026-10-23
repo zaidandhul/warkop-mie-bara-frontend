@@ -63,7 +63,7 @@ export default function HistoryPage() {
             <article key={order.id} className={`rounded-xl border bg-bara-panel p-4 ${order.id === newOrderId ? 'border-bara-cyan' : 'border-bara-line'}`}>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-mono text-sm font-bold">{order.id}</p>
+                  <p className="font-mono text-sm font-bold" data-testid="history-order-code">{order.id}</p>
                   <p className="mt-1 text-xs text-white/50">{dateTime(order.createdAt)}</p>
                 </div>
                 <span className="rounded-full bg-bara-cyan/10 px-2.5 py-1 text-xs font-semibold text-bara-cyan">{order.status}</span>
