@@ -140,6 +140,8 @@ export default function AdminOrdersPage() {
           </button>
         )}
         <button
+          data-testid="toggle-cancelled"
+          data-count={cancelled.length}
           onClick={() => setShowCancelled((value) => !value)}
           className="rounded-lg border border-bara-line px-4 py-2 text-sm text-white/70"
         >
@@ -159,7 +161,7 @@ export default function AdminOrdersPage() {
       )}
 
       {showCancelled && (
-        <div className="mx-5 mb-3 flex max-h-72 gap-3 overflow-x-auto rounded-xl border border-bara-line p-3">
+        <div data-testid="cancelled-panel" className="mx-5 mb-3 flex max-h-72 gap-3 overflow-x-auto rounded-xl border border-bara-line p-3">
           {cancelled.length
             ? cancelled.map((order) => <div key={order.id} className="w-72 shrink-0 opacity-70"><OrderCard {...cardProps(order)} /></div>)
             : <p className="text-sm text-white/50">Tidak ada pesanan dibatalkan.</p>}
@@ -175,10 +177,10 @@ export default function AdminOrdersPage() {
             // Selesai: terbaru di atas; kolom lain: terlama di atas (antrean).
             if (column.status === 'selesai') columnOrders.reverse()
             return (
-              <section key={column.status} className="flex min-h-0 flex-col rounded-xl bg-white/[0.03]">
+              <section key={column.status} data-testid={`column-${column.status}`} className="flex min-h-0 flex-col rounded-xl bg-white/[0.03]">
                 <h2 className={`flex items-center justify-between border-b-2 px-3 py-2 text-base font-bold ${column.accent}`}>
                   {column.label}
-                  <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-sm text-white">{columnOrders.length}</span>
+                  <span data-testid={`column-count-${column.status}`} className="rounded-full bg-white/10 px-2.5 py-0.5 text-sm text-white">{columnOrders.length}</span>
                 </h2>
                 <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-2">
                   {columnOrders.length

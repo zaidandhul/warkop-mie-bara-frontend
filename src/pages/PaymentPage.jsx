@@ -68,6 +68,7 @@ export default function PaymentPage() {
           <label className="mb-3 block text-sm">
             Nama Lengkap <span className="text-bara-chili">*</span>
             <input
+              data-testid="customer-name"
               required
               minLength={2}
               maxLength={100}
@@ -80,6 +81,7 @@ export default function PaymentPage() {
           <label className="mb-3 block text-sm">
             No. HP (opsional)
             <input
+              data-testid="customer-phone"
               type="tel"
               inputMode="tel"
               maxLength={20}
@@ -108,7 +110,7 @@ export default function PaymentPage() {
           </div>
         </section>
 
-        {error && <p role="alert" className="mt-4 rounded-lg border border-bara-chili/50 bg-bara-chili/10 px-3 py-2 text-sm text-bara-chili">{error}</p>}
+        {error && <p role="alert" data-testid="payment-error" className="mt-4 rounded-lg border border-bara-chili/50 bg-bara-chili/10 px-3 py-2 text-sm text-bara-chili">{error}</p>}
 
         <div className="fixed inset-x-0 bottom-0 mx-auto max-w-md border-t border-bara-line bg-bara-black p-4">
           <div className="flex items-center justify-between">
@@ -116,7 +118,7 @@ export default function PaymentPage() {
               <p className="text-xs text-white/60">Total Pembayaran</p>
               <p className="text-lg font-bold">{rupiah(grandTotal)}</p>
             </div>
-            <button type="submit" disabled={submitting || !lines.length || !tableNumber} className="rounded-xl bg-bara-cyan px-6 py-3 font-bold text-black disabled:opacity-50">
+            <button type="submit" data-testid="submit-order" disabled={submitting || !lines.length || !tableNumber} className="rounded-xl bg-bara-cyan px-6 py-3 font-bold text-black disabled:opacity-50">
               {submitting ? 'Mengirim…' : 'Buat Pesanan'}
             </button>
           </div>

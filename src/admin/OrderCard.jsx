@@ -37,13 +37,15 @@ export default function OrderCard({ order, now, isNew, busy, onChangeStatus }) {
 
   return (
     <article
+      data-testid="order-card"
+      data-order-id={order.id}
       className={`rounded-xl border bg-bara-panel p-3 ${isNew ? 'border-amber-400 ring-2 ring-amber-400/60' : 'border-bara-line'}`}
     >
       <header className="flex items-start justify-between gap-2">
         <div>
           <p className="text-2xl font-extrabold leading-none">
             Meja {order.tableNumber}
-            {isNew && <span className="ml-2 animate-pulse rounded bg-amber-400 px-1.5 py-0.5 align-middle text-xs font-bold text-black">BARU</span>}
+            {isNew && <span data-testid="badge-new" className="ml-2 animate-pulse rounded bg-amber-400 px-1.5 py-0.5 align-middle text-xs font-bold text-black">BARU</span>}
           </p>
           <p className="mt-1 font-medium">{order.customerName}</p>
           {order.customerPhone && <p className="text-xs text-white/50">{order.customerPhone}</p>}
@@ -71,6 +73,7 @@ export default function OrderCard({ order, now, isNew, busy, onChangeStatus }) {
           {confirmCancel ? (
             <>
               <button
+                data-testid="confirm-cancel"
                 disabled={busy}
                 onClick={() => onChangeStatus(order, cancel.to)}
                 className="min-h-12 flex-1 rounded-lg bg-bara-chili font-bold disabled:opacity-50"
@@ -89,6 +92,7 @@ export default function OrderCard({ order, now, isNew, busy, onChangeStatus }) {
             <>
               {primary && (
                 <button
+                  data-testid={`action-${primary.to}`}
                   disabled={busy}
                   onClick={() => onChangeStatus(order, primary.to)}
                   className="min-h-12 flex-1 rounded-lg bg-bara-cyan text-lg font-bold text-black disabled:opacity-50"
@@ -98,6 +102,7 @@ export default function OrderCard({ order, now, isNew, busy, onChangeStatus }) {
               )}
               {cancel && (
                 <button
+                  data-testid="action-dibatalkan"
                   disabled={busy}
                   onClick={() => setConfirmCancel(true)}
                   className="min-h-12 rounded-lg border border-bara-chili/60 px-4 font-semibold text-bara-chili disabled:opacity-50"

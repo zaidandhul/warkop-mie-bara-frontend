@@ -59,7 +59,7 @@ export default function OrderReviewPage() {
         ) : (
           <ul className="divide-y divide-bara-line">
             {lines.map((l) => (
-              <li key={l.key} className="py-3">
+              <li key={l.key} className="py-3" data-testid="cart-line" data-item-id={l.item.id}>
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="font-semibold">{l.item.name}</p>
@@ -72,7 +72,7 @@ export default function OrderReviewPage() {
                   </div>
                 </div>
                 <div className="mt-2 flex items-center justify-between">
-                  <span className="text-sm">{rupiah(l.unitPrice)}</span>
+                  <span className="text-sm" data-testid="cart-line-price">{rupiah(l.unitPrice)}</span>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setQty(l.key, l.qty - 1)}
@@ -125,6 +125,7 @@ export default function OrderReviewPage() {
               <p className="text-lg font-bold">{rupiah(grandTotal)}</p>
             </div>
             <button
+              data-testid="checkout-button"
               onClick={() => navigate('/payment')}
               className="rounded-xl bg-bara-cyan px-6 py-3 font-bold text-black"
             >

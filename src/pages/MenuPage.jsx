@@ -14,11 +14,12 @@ const NOTE_ONLY_CATEGORIES = ['camilan', 'signature-drink', 'all-variant-drink']
 
 function MenuCard({ item, onAdd, categoryId }) {
   return (
-    <div className="w-36 shrink-0">
+    <div className="w-36 shrink-0" data-testid={`menu-card-${item.id}`}>
       <div className="flex h-28 w-36 items-center justify-center rounded-lg bg-bara-panel text-3xl">🍜</div>
       <p className="mt-2 text-sm font-semibold leading-tight">{item.name}</p>
-      <p className="mt-1 text-sm text-white/70">{rupiah(item.price)}</p>
+      <p className="mt-1 text-sm text-white/70" data-testid={`menu-price-${item.id}`}>{rupiah(item.price)}</p>
       <button
+        data-testid={`menu-add-${item.id}`}
         onClick={() => onAdd(item, categoryId)}
         className="mt-2 w-full rounded-lg border border-bara-cyan py-1.5 text-sm font-semibold text-bara-cyan active:bg-bara-cyan active:text-black"
       >
@@ -152,6 +153,7 @@ export default function MenuPage() {
         <label className="mt-3 block rounded-lg border border-bara-cyan/40 bg-bara-cyan/10 px-4 py-3 text-sm">
           <span className="mb-2 block font-semibold text-bara-cyan">Pilih nomor meja</span>
           <select
+            data-testid="table-select"
             value={tableNumber ?? ''}
             onChange={(event) => setTable(event.target.value || null)}
             className="w-full rounded-lg border border-bara-line bg-bara-panel px-3 py-2 text-white outline-none focus:border-bara-cyan"
@@ -227,6 +229,7 @@ export default function MenuPage() {
       {count() > 0 && createPortal(
         <div className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-md p-4">
           <button
+            data-testid="cart-button"
             onClick={() => navigate('/view-order')}
             className="flex w-full items-center justify-between rounded-xl bg-bara-cyan px-4 py-3 font-bold text-black shadow-lg"
           >

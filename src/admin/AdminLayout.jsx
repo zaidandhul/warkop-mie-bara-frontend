@@ -48,16 +48,16 @@ export default function AdminLayout() {
         </nav>
         <div className="ml-auto flex items-center gap-3">
           {soundReady ? (
-            <span className="text-sm text-emerald-300">🔔 Suara aktif</span>
+            <span className="text-sm text-emerald-300" data-testid="sound-status">🔔 Suara aktif</span>
           ) : (
             <button onClick={enableSound} className="rounded-lg bg-amber-400 px-4 py-2.5 text-sm font-bold text-black">
               🔕 Aktifkan suara
             </button>
           )}
-          <span className="text-sm text-white/70">
+          <span className="text-sm text-white/70" data-testid="staff-label">
             {staff.username} · <span className="font-semibold text-white">Admin</span>
           </span>
-          <button onClick={handleLogout} className="rounded-lg border border-bara-line px-4 py-2.5 text-sm hover:bg-white/10">
+          <button data-testid="logout" onClick={handleLogout} className="rounded-lg border border-bara-line px-4 py-2.5 text-sm hover:bg-white/10">
             Keluar
           </button>
         </div>

@@ -8,6 +8,7 @@ function AvailabilitySwitch({ item, busy, onToggle }) {
   return (
     <button
       role="switch"
+      data-testid={`menu-switch-${item.id}`}
       aria-checked={item.isActive}
       aria-label={`${item.name}: ${item.isActive ? 'tersedia' : 'habis'}`}
       disabled={busy}
@@ -38,6 +39,7 @@ function PriceEditor({ item, busy, onSave }) {
   if (!editing) {
     return (
       <button
+        data-testid={`price-edit-${item.id}`}
         onClick={() => { setValue(String(item.price)); setEditing(true) }}
         className="min-h-12 rounded-lg border border-bara-line px-3 text-sm hover:bg-white/10"
       >
@@ -52,6 +54,7 @@ function PriceEditor({ item, busy, onSave }) {
   return (
     <form onSubmit={submit} className="flex items-center gap-2">
       <input
+        data-testid="price-input"
         autoFocus
         type="number"
         inputMode="numeric"
@@ -62,7 +65,7 @@ function PriceEditor({ item, busy, onSave }) {
         onChange={(e) => setValue(e.target.value)}
         className="min-h-12 w-32 rounded-lg border border-bara-cyan bg-bara-black px-3 text-right"
       />
-      <button type="submit" disabled={busy} className="min-h-12 rounded-lg bg-bara-cyan px-4 font-bold text-black disabled:opacity-50">Simpan</button>
+      <button type="submit" data-testid="price-save" disabled={busy} className="min-h-12 rounded-lg bg-bara-cyan px-4 font-bold text-black disabled:opacity-50">Simpan</button>
       <button type="button" onClick={() => setEditing(false)} className="min-h-12 rounded-lg border border-bara-line px-3">Batal</button>
     </form>
   )
