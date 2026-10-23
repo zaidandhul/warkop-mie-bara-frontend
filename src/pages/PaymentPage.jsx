@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { rememberOrder, submitOrder } from '../api/orders.js'
+import { errorMessage, newIdempotencyKey, rememberOrder, submitOrder } from '../api/orders.js'
 import { useCartStore } from '../store/cartStore.js'
 
 const rupiah = (n) => 'Rp' + n.toLocaleString('id-ID')
@@ -12,11 +12,15 @@ export default function PaymentPage() {
   const [phone, setPhone] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  // Satu key per kunjungan halaman: kirim ulang (klik dobel, retry setelah timeout) tidak membuat pesanan baru.
+  const [idempotencyKey] = useState(newIdempotencyKey)
+  const inFlight = useRef(false)
   const grandTotal = total() + (lines.length ? fee : 0)
 
   const handlePay = async (e) => {
     e.preventDefault()
-    if (!tableNumber || !name.trim() || !lines.length) return
+    if (inFlight.current || !tableNumber || !name.trim() || !lines.length) return
+    inFlight.current = true
     setSubmitting(true)
     setError('')
     try {
@@ -34,13 +38,14 @@ export default function PaymentPage() {
             note: line.opts?.note ?? '',
           },
         })),
-      })
+      }, idempotencyKey)
       rememberOrder(order.id)
       clear()
       navigate('/history', { state: { newOrderId: order.id } })
     } catch (submitError) {
-      setError(submitError.response?.data?.error || 'Pesanan gagal dikirim. Periksa koneksi backend lalu coba lagi.')
+      setError(errorMessage(submitError, 'Pesanan gagal dikirim. Coba lagi.'))
     } finally {
+      inFlight.current = false
       setSubmitting(false)
     }
   }
@@ -64,6 +69,8 @@ export default function PaymentPage() {
             Nama Lengkap <span className="text-bara-chili">*</span>
             <input
               required
+              minLength={2}
+              maxLength={100}
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Nama Lengkap"
@@ -71,11 +78,14 @@ export default function PaymentPage() {
             />
           </label>
           <label className="mb-3 block text-sm">
-            No. HP (untuk info promo)
+            No. HP (opsional)
             <input
+              type="tel"
+              inputMode="tel"
+              maxLength={20}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="No. HP"
+              placeholder="08xxxxxxxxxx"
               className="mt-1 w-full rounded-lg border border-bara-line bg-bara-panel px-3 py-2 outline-none focus:border-bara-cyan"
             />
           </label>

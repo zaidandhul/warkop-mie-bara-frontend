@@ -3,7 +3,17 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { OTHER_FEE } from '../data/menu.js'
 
 
-const keyOf = (item, o = {}) => [item.id, o.level ?? '', (o.toppings ?? []).slice().sort().join('+'), o.variant ?? '', o.note?.trim() ?? ''].join('|')
+export const MAX_TABLE_NUMBER = 99
+
+// Sama dengan backend: trim, hanya angka, nol di depan dibuang ("09" -> "9"), 1–99. Tidak valid -> null.
+export function normalizeTableNumber(value) {
+  const text = String(value ?? '').trim()
+  if (!/^\d{1,4}$/.test(text)) return null
+  const number = Number(text)
+  return number >= 1 && number <= MAX_TABLE_NUMBER ? String(number) : null
+}
+
+const keyOf =(item, o = {}) => [item.id, o.level ?? '', (o.toppings ?? []).slice().sort().join('+'), o.variant ?? '', o.note?.trim() ?? ''].join('|')
 
 export const useCartStore = create(
   persist(
@@ -11,7 +21,7 @@ export const useCartStore = create(
       tableNumber: null,
       lines: [], 
       fee: OTHER_FEE,
-      setTable: (n) => set({ tableNumber: n }),
+      setTable: (n) => set({ tableNumber: normalizeTableNumber(n) }),
       setFee: (fee) => set({ fee: Number(fee) || 0 }),
       add: (item, opts = {}, unitPrice = item.price, qty = 1) =>
         set((s) => {
