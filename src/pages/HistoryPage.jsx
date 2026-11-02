@@ -68,7 +68,9 @@ export default function HistoryPage() {
                 </div>
                 <span className="rounded-full bg-bara-cyan/10 px-2.5 py-1 text-xs font-semibold text-bara-cyan">{order.status}</span>
               </div>
-              <p className="mt-3 text-sm text-white/70">Meja {order.tableNumber} · Bayar di kasir</p>
+              <p className="mt-3 text-sm text-white/70">
+                Meja {order.tableNumber} · {order.paid ? <span className="text-emerald-300">Lunas</span> : 'Belum bayar, silakan bayar di kasir'}
+              </p>
               <ul className="mt-3 space-y-1 border-t border-bara-line pt-3 text-sm">
                 {order.items.map((item, index) => (
                   <li key={`${order.id}-${item.itemId}-${index}`}>

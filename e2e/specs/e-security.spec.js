@@ -35,6 +35,17 @@ describe('E. Keamanan API', function () {
     }
   })
 
+  it('paymentMethod "online" ditolak 400 (tanpa payment gateway)', async function () {
+    const result = await api('/orders', {
+      method: 'POST',
+      headers: { 'Idempotency-Key': crypto.randomUUID() },
+      body: { tableNumber: '5', customer: { name: `E2E Online ${runId}` }, paymentMethod: 'online', items: [{ itemId: 'milo', qty: 1 }] },
+    })
+    assert.equal(result.status, 400)
+    assert.match(result.json.error, /online belum tersedia/)
+    assert.equal((await ordersByName(cookie, `E2E Online ${runId}`)).length, 0, 'Pesanan online tetap tersimpan')
+  })
+
   it('nomor HP tidak terbuka di respons publik', async function () {
     const phone = '081298765432'
     const name = `E2E Privasi ${runId}`

@@ -11,6 +11,9 @@ import AdminLayout from './admin/AdminLayout.jsx'
 import AdminLoginPage from './admin/AdminLoginPage.jsx'
 import AdminOrdersPage from './admin/AdminOrdersPage.jsx'
 import AdminMenuPage from './admin/AdminMenuPage.jsx'
+import AdminQrPage from './admin/AdminQrPage.jsx'
+import AdminNewOrderPage from './admin/AdminNewOrderPage.jsx'
+import AdminReportsPage from './admin/AdminReportsPage.jsx'
 
 export default function App() {
   const location = useLocation()
@@ -32,7 +35,10 @@ export default function App() {
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminOrdersPage />} />
+          <Route path="pesanan-baru" element={<AdminNewOrderPage />} />
           <Route path="menu" element={<AdminMenuPage />} />
+          <Route path="laporan" element={<AdminReportsPage />} />
+          <Route path="qr" element={<AdminQrPage />} />
         </Route>
       </Routes>
     </div>

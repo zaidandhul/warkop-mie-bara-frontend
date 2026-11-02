@@ -48,6 +48,9 @@ export async function ordersByName(cookie, name) {
 export const setStatus = (cookie, code, status) =>
   api(`/admin/orders/${encodeURIComponent(code)}/status`, { method: 'PATCH', cookie, body: { status } })
 
+export const setPayment = (cookie, code, method) =>
+  api(`/admin/orders/${encodeURIComponent(code)}/payment`, { method: 'PATCH', cookie, body: { method } })
+
 export async function adminMenuItem(cookie, id) {
   const result = await api('/admin/menu', { cookie })
   return result.json.items.find((item) => item.id === id)
