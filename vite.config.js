@@ -12,7 +12,9 @@ export default defineConfig(({ mode }) => {
     server: {
       host: true,
       proxy: {
-        '/api': process.env.VITE_PROXY_TARGET || env.VITE_PROXY_TARGET || 'http://localhost:3000',
+        // xfwd: kirim X-Forwarded-For supaya backend melihat IP perangkat asli (rate limit per perangkat),
+        // bukan IP Vite. Backend hanya mempercayainya dari loopback (TRUST_PROXY).
+        '/api': { target: process.env.VITE_PROXY_TARGET || env.VITE_PROXY_TARGET || 'http://localhost:3000', xfwd: true },
       },
     },
   }

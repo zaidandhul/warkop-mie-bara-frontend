@@ -2,13 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 import { getMenu } from '../api/orders.js'
-import { MAX_TABLE_NUMBER, normalizeTableNumber, useCartStore } from '../store/cartStore.js'
+import { useCartStore } from '../store/cartStore.js'
 import ItemSheet from '../components/ItemSheet.jsx'
+import CartSyncNotice, { mergeCartChanges } from '../components/CartSyncNotice.jsx'
 import { TOPPINGS } from '../data/menu.js'
 import logo from '../logo.png'
 
 const rupiah = (n) => 'Rp' + n.toLocaleString('id-ID')
-const TABLE_NUMBERS = Array.from({ length: MAX_TABLE_NUMBER }, (_, index) => String(index + 1))
 const CONFIGURABLE_FOOD_CATEGORIES = ['varian-mie', 'special', 'bara-nusantara']
 const NOTE_ONLY_CATEGORIES = ['camilan', 'signature-drink', 'all-variant-drink']
 
@@ -32,13 +32,15 @@ function MenuCard({ item, onAdd, categoryId }) {
 export default function MenuPage() {
   const [params] = useSearchParams()
   const navigate = useNavigate()
-  const { tableNumber, setTable, add, count, total, setFee } = useCartStore()
+  const { tableNumber, tableCount, setTable, add, count, total, syncWithMenu } = useCartStore()
+  const tableNumbers = Array.from({ length: tableCount }, (_, index) => String(index + 1))
   const [catalog, setCatalog] = useState({ categories: [], toppings: [], fee: 0, levelPriceStep: 0 })
   const [loadingMenu, setLoadingMenu] = useState(true)
   const [menuError, setMenuError] = useState('')
   const [selectedItem, setSelectedItem] = useState(null)
   const [query, setQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
+  const [cartChanges, setCartChanges] = useState(null)
   const [activeTab, setActiveTab] = useState('')
   const sectionRefs = useRef({})
   const tabRefs = useRef({})
@@ -56,7 +58,7 @@ export default function MenuPage() {
     try {
       const result = await getMenu()
       setCatalog(result)
-      setFee(result.fee)
+      setCartChanges((previous) => mergeCartChanges(previous, syncWithMenu(result)))
       setActiveTab((current) => result.categories.some((category) => category.id === current)
         ? current
         : (result.categories[0]?.id ?? ''))
@@ -65,7 +67,7 @@ export default function MenuPage() {
     } finally {
       setLoadingMenu(false)
     }
-  }, [setFee])
+  }, [syncWithMenu])
 
   useEffect(() => { loadMenu() }, [loadMenu])
 
@@ -74,8 +76,7 @@ export default function MenuPage() {
     initialTableHandled.current = true
     const requestedTable = params.get('tableNumber') ?? tableNumber
     if (requestedTable == null) return
-    const normalizedTable = normalizeTableNumber(requestedTable)
-    if (normalizedTable !== tableNumber) setTable(normalizedTable)
+    if (String(requestedTable) !== tableNumber) setTable(requestedTable)
   }, [params, setTable, tableNumber])
 
   const categories = useMemo(() => {
@@ -158,10 +159,12 @@ export default function MenuPage() {
             onChange={(event) => setTable(event.target.value || null)}
             className="w-full rounded-lg border border-bara-line bg-bara-panel px-3 py-2 text-white outline-none focus:border-bara-cyan"
           >
-            <option value="">Pilih meja 1–{MAX_TABLE_NUMBER}</option>
-            {TABLE_NUMBERS.map((number) => <option key={number} value={number}>Meja {number}</option>)}
+            <option value="">Pilih meja 1–{tableCount}</option>
+            {tableNumbers.map((number) => <option key={number} value={number}>Meja {number}</option>)}
           </select>
         </label>
+
+        {cartChanges && <div className="mt-3"><CartSyncNotice changes={cartChanges} /></div>}
 
         {showSearch && (
           <input

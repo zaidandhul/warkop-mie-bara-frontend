@@ -2,19 +2,23 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getMenu } from '../api/orders.js'
 import { useCartStore } from '../store/cartStore.js'
+import CartSyncNotice, { mergeCartChanges } from '../components/CartSyncNotice.jsx'
 
 const rupiah = (n) => 'Rp' + n.toLocaleString('id-ID')
 
 export default function OrderReviewPage() {
-  const { tableNumber, lines, setQty, add, total, fee } = useCartStore()
+  const { tableNumber, lines, setQty, add, total, fee, syncWithMenu } = useCartStore()
   const navigate = useNavigate()
   const [related, setRelated] = useState([])
+  const [cartChanges, setCartChanges] = useState(null)
   const grandTotal = total() + (lines.length ? fee : 0)
 
   useEffect(() => {
-    getMenu().then((menu) => setRelated(menu.categories.find((category) => category.id === 'camilan')?.items.slice(0, 2) ?? []))
-      .catch(() => setRelated([]))
-  }, [])
+    getMenu().then((menu) => {
+      setCartChanges((previous) => mergeCartChanges(previous, syncWithMenu(menu)))
+      setRelated(menu.categories.find((category) => category.id === 'camilan')?.items.slice(0, 2) ?? [])
+    }).catch(() => setRelated([]))
+  }, [syncWithMenu])
 
   return (
     <div className="mx-auto max-w-md pb-28">
@@ -27,6 +31,7 @@ export default function OrderReviewPage() {
         <div className="rounded-lg border border-bara-cyan/50 bg-bara-panel px-3 py-2 text-sm">
           Dine In · Meja {tableNumber ?? '-'}
         </div>
+        {cartChanges && <div className="mt-3"><CartSyncNotice changes={cartChanges} /></div>}
       </div>
 
       <section className="px-4 pt-6">

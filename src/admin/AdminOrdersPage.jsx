@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { errorMessage } from '../api/orders.js'
-import { getAdminOrders, isUnauthorized, setOrderStatus } from './api.js'
+import { rupiah } from '../data/menu.js'
+import { getAdminOrders, isUnauthorized, setOrderPayment, setOrderStatus } from './api.js'
 import { COLUMNS, todayWib } from './constants.js'
 import { playNewOrderChime } from './sound.js'
 import OrderCard from './OrderCard.jsx'
@@ -91,11 +92,12 @@ export default function AdminOrdersPage() {
     return () => clearTimeout(timer)
   }, [actionError])
 
-  const changeStatus = async (order, status) => {
+  // Jalankan aksi pada satu pesanan; hasilnya (field yang berubah) langsung dipasang ke kartu.
+  const runOrderAction = async (order, request, failMessage) => {
     setBusyIds((current) => new Set(current).add(order.id))
     try {
-      await setOrderStatus(order.id, status)
-      setOrders((current) => current.map((o) => (o.id === order.id ? { ...o, status } : o)))
+      const changes = await request()
+      setOrders((current) => current.map((o) => (o.id === order.id ? { ...o, ...changes } : o)))
       setNewIds((current) => {
         const next = new Map(current)
         next.delete(order.id)
@@ -103,7 +105,7 @@ export default function AdminOrdersPage() {
       })
     } catch (error) {
       if (isUnauthorized(error)) return onSessionExpired()
-      setActionError(errorMessage(error, 'Gagal mengubah status pesanan.'))
+      setActionError(errorMessage(error, failMessage))
       load()
     } finally {
       setBusyIds((current) => {
@@ -114,14 +116,26 @@ export default function AdminOrdersPage() {
     }
   }
 
+  const changeStatus = (order, status) => runOrderAction(
+    order, async () => { await setOrderStatus(order.id, status); return { status } }, 'Gagal mengubah status pesanan.'
+  )
+  const changePayment = (order, method) => runOrderAction(
+    order, async () => {
+      const { paidAt, paidMethod } = await setOrderPayment(order.id, method)
+      return { paidAt, paidMethod }
+    }, 'Gagal menyimpan status pembayaran.'
+  )
+
   const now = lastUpdated?.getTime() ?? Date.now()
   const cancelled = orders.filter((order) => order.status === 'dibatalkan')
+  const unpaid = orders.filter((order) => order.status !== 'dibatalkan' && !order.paidAt)
   const cardProps = (order) => ({
     order,
     now,
     isNew: newIds.has(order.id),
     busy: busyIds.has(order.id),
     onChangeStatus: changeStatus,
+    onChangePayment: changePayment,
   })
 
   return (
@@ -147,6 +161,9 @@ export default function AdminOrdersPage() {
         >
           Dibatalkan ({cancelled.length}) {showCancelled ? '▲' : '▼'}
         </button>
+        <span data-testid="unpaid-summary" className="rounded-lg border border-amber-400/40 px-3 py-2 text-sm text-amber-300">
+          Belum bayar: {unpaid.length} · {rupiah(unpaid.reduce((sum, order) => sum + order.total, 0))}
+        </span>
         <p className="ml-auto text-sm text-white/50">
           {loadError
             ? <span className="text-bara-chili">⚠ {loadError}</span>

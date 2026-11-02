@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { rupiah } from '../data/menu.js'
-import { ACTIONS, PAYMENT_LABELS, formatTimeWib } from './constants.js'
+import { ACTIONS, PAID_METHOD_LABELS, PAID_METHODS, formatTimeWib } from './constants.js'
 
 function minutesAgo(createdAt, now) {
   const minutes = Math.max(0, Math.floor((now - new Date(createdAt).getTime()) / 60000))
@@ -29,11 +29,45 @@ function ItemLine({ item }) {
   )
 }
 
-export default function OrderCard({ order, now, isNew, busy, onChangeStatus }) {
+function PaymentActions({ order, busy, onChangePayment }) {
+  const [confirmUnpay, setConfirmUnpay] = useState(false)
+  if (order.paidAt) {
+    return confirmUnpay ? (
+      <div className="mt-2 flex items-center gap-2 text-sm">
+        <span className="flex-1 text-white/70">Batalkan tanda lunas?</span>
+        <button data-testid="confirm-unpay" disabled={busy} onClick={() => onChangePayment(order, null)} className="min-h-10 rounded-lg bg-bara-chili px-3 font-semibold disabled:opacity-50">Ya</button>
+        <button disabled={busy} onClick={() => setConfirmUnpay(false)} className="min-h-10 rounded-lg border border-bara-line px-3">Tidak</button>
+      </div>
+    ) : (
+      <button data-testid="unpay" disabled={busy} onClick={() => setConfirmUnpay(true)} className="mt-2 text-xs text-white/40 underline disabled:opacity-50">
+        Batalkan lunas
+      </button>
+    )
+  }
+  if (order.status === 'dibatalkan') return null
+  return (
+    <div className="mt-2 flex gap-2">
+      {PAID_METHODS.map(({ method, label }) => (
+        <button
+          key={method}
+          data-testid={`pay-${method}`}
+          disabled={busy}
+          onClick={() => onChangePayment(order, method)}
+          className="min-h-12 flex-1 rounded-lg border border-emerald-400/70 font-semibold text-emerald-300 disabled:opacity-50"
+        >
+          Lunas · {label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+export default function OrderCard({ order, now, isNew, busy, onChangeStatus, onChangePayment }) {
   const [confirmCancel, setConfirmCancel] = useState(false)
   const actions = ACTIONS[order.status] ?? []
   const primary = actions.find((action) => !action.danger)
-  const cancel = actions.find((action) => action.danger)
+  // Pesanan yang sudah lunas tidak bisa dibatalkan (backend juga menolak).
+  const cancel = order.paidAt ? null : actions.find((action) => action.danger)
 
   return (
     <article
@@ -47,7 +81,10 @@ export default function OrderCard({ order, now, isNew, busy, onChangeStatus }) {
             Meja {order.tableNumber}
             {isNew && <span data-testid="badge-new" className="ml-2 animate-pulse rounded bg-amber-400 px-1.5 py-0.5 align-middle text-xs font-bold text-black">BARU</span>}
           </p>
-          <p className="mt-1 font-medium">{order.customerName}</p>
+          <p className="mt-1 font-medium">
+            {order.customerName}
+            {order.source === 'kasir' && <span data-testid="badge-kasir" className="ml-2 rounded bg-white/10 px-1.5 py-0.5 align-middle text-xs text-white/70">Kasir</span>}
+          </p>
           {order.customerPhone && <p className="text-xs text-white/50">{order.customerPhone}</p>}
         </div>
         <div className="text-right">
@@ -61,8 +98,13 @@ export default function OrderCard({ order, now, isNew, busy, onChangeStatus }) {
       </ul>
 
       <div className="mt-2 flex items-center justify-between text-sm">
-        <span className="rounded-full border border-bara-line px-2 py-0.5 text-white/70">
-          {PAYMENT_LABELS[order.paymentMethod] ?? order.paymentMethod}
+        <span
+          data-testid="payment-status"
+          className={`rounded-full border px-2 py-0.5 ${order.paidAt ? 'border-emerald-400/60 text-emerald-300' : 'border-amber-400/60 text-amber-300'}`}
+        >
+          {order.paidAt
+            ? `✓ Lunas · ${PAID_METHOD_LABELS[order.paidMethod] ?? order.paidMethod} · ${formatTimeWib(order.paidAt)}`
+            : 'Belum bayar'}
         </span>
         <span className="text-base font-bold">{rupiah(order.total)}</span>
       </div>
@@ -114,6 +156,7 @@ export default function OrderCard({ order, now, isNew, busy, onChangeStatus }) {
           )}
         </div>
       )}
+      <PaymentActions order={order} busy={busy} onChangePayment={onChangePayment} />
     </article>
   )
 }

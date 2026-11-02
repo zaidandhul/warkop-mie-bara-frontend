@@ -1,12 +1,13 @@
-import { useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { errorMessage, newIdempotencyKey, rememberOrder, submitOrder } from '../api/orders.js'
+import { errorMessage, getMenu, newIdempotencyKey, rememberOrder, submitOrder } from '../api/orders.js'
 import { useCartStore } from '../store/cartStore.js'
+import CartSyncNotice, { mergeCartChanges } from '../components/CartSyncNotice.jsx'
 
 const rupiah = (n) => 'Rp' + n.toLocaleString('id-ID')
 
 export default function PaymentPage() {
-  const { tableNumber, lines, total, fee, clear } = useCartStore()
+  const { tableNumber, lines, total, fee, clear, syncWithMenu } = useCartStore()
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -15,7 +16,16 @@ export default function PaymentPage() {
   // Satu key per kunjungan halaman: kirim ulang (klik dobel, retry setelah timeout) tidak membuat pesanan baru.
   const [idempotencyKey] = useState(newIdempotencyKey)
   const inFlight = useRef(false)
+  const [cartChanges, setCartChanges] = useState(null)
   const grandTotal = total() + (lines.length ? fee : 0)
+
+  // Total yang tampil harus sama dengan yang dihitung server, jadi harga keranjang disamakan dengan
+  // menu terbaru. Gagal memuat menu tidak menghalangi pesanan: server tetap menghitung ulang harga.
+  const syncCart = useCallback(
+    () => getMenu().then((menu) => setCartChanges((previous) => mergeCartChanges(previous, syncWithMenu(menu)))).catch(() => {}),
+    [syncWithMenu]
+  )
+  useEffect(() => { syncCart() }, [syncCart])
 
   const handlePay = async (e) => {
     e.preventDefault()
@@ -44,6 +54,8 @@ export default function PaymentPage() {
       navigate('/history', { state: { newOrderId: order.id } })
     } catch (submitError) {
       setError(errorMessage(submitError, 'Pesanan gagal dikirim. Coba lagi.'))
+      // Ditolak validasi (mis. menu baru saja habis atau harga berubah): perbarui keranjang.
+      if (submitError?.response?.status === 400) syncCart()
     } finally {
       inFlight.current = false
       setSubmitting(false)
@@ -62,6 +74,7 @@ export default function PaymentPage() {
           Dine In · Meja <span className="font-bold text-bara-cyan">{tableNumber ?? 'belum dipilih'}</span>
           {!tableNumber && <Link to="/order" className="ml-2 font-semibold text-bara-cyan underline">Pilih di halaman menu</Link>}
         </div>
+        {cartChanges && <div className="mt-3"><CartSyncNotice changes={cartChanges} /></div>}
 
         <section className="pt-6">
           <h2 className="mb-3 text-sm font-bold text-bara-cyan">Data Pemesan</h2>
@@ -95,18 +108,9 @@ export default function PaymentPage() {
 
         <section className="pt-4">
           <h2 className="mb-3 text-sm font-bold text-bara-cyan">Metode Pembayaran</h2>
-          <div className="space-y-3">
-            <div className="rounded-lg border border-bara-cyan bg-bara-panel px-3 py-3 text-sm font-medium text-bara-cyan">
-              <p>Bayar di Kasir</p>
-              <p className="mt-1 text-xs font-normal text-white/60">Bayar setelah pesanan dibuat.</p>
-            </div>
-            <div aria-disabled="true" className="rounded-lg border border-bara-line bg-bara-panel/60 px-3 py-3 text-sm text-white/50">
-              <div className="flex items-center justify-between gap-3">
-                <p className="font-medium">QRIS</p>
-                <span className="rounded-full border border-bara-line px-2 py-0.5 text-xs">Belum aktif</span>
-              </div>
-              <p className="mt-1 text-xs">Pembayaran QRIS belum terhubung.</p>
-            </div>
+          <div className="rounded-lg border border-bara-cyan bg-bara-panel px-3 py-3 text-sm font-medium text-bara-cyan">
+            <p>Bayar di Kasir</p>
+            <p className="mt-1 text-xs font-normal text-white/60">Bayar setelah pesanan dibuat, tunai atau QRIS di kasir.</p>
           </div>
         </section>
 
@@ -116,7 +120,7 @@ export default function PaymentPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-white/60">Total Pembayaran</p>
-              <p className="text-lg font-bold">{rupiah(grandTotal)}</p>
+              <p className="text-lg font-bold" data-testid="payment-total">{rupiah(grandTotal)}</p>
             </div>
             <button type="submit" data-testid="submit-order" disabled={submitting || !lines.length || !tableNumber} className="rounded-xl bg-bara-cyan px-6 py-3 font-bold text-black disabled:opacity-50">
               {submitting ? 'Mengirim…' : 'Buat Pesanan'}

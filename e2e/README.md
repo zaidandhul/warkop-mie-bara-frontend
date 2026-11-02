@@ -1,7 +1,8 @@
 # Test End-to-End (Selenium + Mocha)
 
 Test ini menjalankan aplikasi sungguhan di Chrome: alur pelanggan, login admin, dashboard pesanan,
-kelola menu, dan beberapa pemeriksaan keamanan API. Semua test berjalan terhadap database terpisah
+kelola menu, keamanan API, status pembayaran, QR meja, pesanan kasir, dan laporan + ekspor Excel
+(spec A–I). Semua test berjalan terhadap database terpisah
 **`kopi_miebara_test`**, tidak pernah terhadap `kopi_miebara`.
 
 ## Prasyarat
@@ -22,13 +23,16 @@ npm run db:test:setup
 
 `db:test:setup` menghapus lalu membuat ulang `kopi_miebara_test`. Langkahnya:
 
-- Menjalankan `src/database/schema.sql`. File ini sudah memuat hasil migrasi 001–004, jadi file
+- Menjalankan `src/database/schema.sql`. File ini sudah memuat hasil migrasi 001–006, jadi file
   migrasi tidak dijalankan lagi.
 - Mengisi menu dari `src/data/menu.json`.
 - Mengosongkan opsi kategori minuman dan camilan, sama seperti di database utama.
 - Memeriksa strukturnya.
 
 Skrip ini **menolak jalan** jika nama database tidak berakhiran `_test`.
+
+`.env.test` juga harus berisi `ORDER_RATE_LIMIT=0` (lihat `.env.test.example`). Test membuat banyak
+pesanan dari satu IP, dan batas default 30 per 10 menit akan membuatnya gagal.
 
 ## 2. Buat akun admin uji
 
@@ -71,6 +75,9 @@ database backend berakhiran `_test`. Jika tidak, seluruh test dibatalkan.
   - Data yang diubah (status Milo, harga Vanilla Latte) dikembalikan di hook `after`.
   - Pesanan uji memakai nama unik per run (`E2E … <runId>`) dan dibiarkan di database uji.
 - Dashboard memuat ulang tiap 10 detik, jadi test menunggu kartu pesanan baru sampai 20 detik.
+- Spec I mengunduh file Excel ke folder sementara (lewat Chrome DevTools) lalu memeriksa isinya.
+- Saat sebuah halaman pertama kali memakai dependency baru, Vite bisa me-reload halaman di tengah test
+  ("optimized dependencies changed"). Jalankan ulang test jika itu terjadi.
 - Ganti nilai di `.env.e2e` lewat variabel lingkungan bila perlu, misalnya
   `E2E_HEADLESS=false npm run test:e2e` (Git Bash) untuk melihat browsernya.
 - Elemen dipilih lewat atribut `data-testid` di komponen. Jangan hapus atribut itu saat mengubah UI.

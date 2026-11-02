@@ -47,3 +47,8 @@ body { @apply bg-bara-black text-white font-sans; }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Cetak (QR meja): latar putih, tanpa latar gelap aplikasi. */
+@media print {
+  body { background: #fff; }
+}

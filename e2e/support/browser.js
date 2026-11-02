@@ -45,7 +45,12 @@ export async function waitText(driver, locator, predicate, timeout = DEFAULT_WAI
   await driver.wait(async () => {
     const elements = await driver.findElements(locator)
     if (!elements.length) return false
-    last = await textOf(elements[0])
+    try {
+      last = await textOf(elements[0])
+    } catch (error) {
+      if (error.name === 'StaleElementReferenceError') return false // dirender ulang React; coba lagi
+      throw error
+    }
     return predicate(last)
   }, timeout, message ?? `Teks tidak sesuai (terakhir: "${last}")`)
   return last

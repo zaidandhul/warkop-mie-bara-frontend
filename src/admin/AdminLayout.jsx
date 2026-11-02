@@ -39,12 +39,15 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="flex h-screen flex-col">
-      <header className="flex shrink-0 items-center gap-4 border-b border-bara-line bg-bara-panel px-5 py-3">
+    <div className="flex h-screen flex-col print:h-auto print:bg-white">
+      <header className="flex shrink-0 items-center gap-4 border-b border-bara-line bg-bara-panel px-5 py-3 print:hidden">
         <p className="text-lg font-bold">Mie Bara <span className="font-normal text-white/50">· Staf</span></p>
         <nav className="flex gap-2">
           <NavLink to="/admin" end className={navClass}>Pesanan</NavLink>
+          <NavLink to="/admin/pesanan-baru" className={navClass}>Input Pesanan</NavLink>
           <NavLink to="/admin/menu" className={navClass}>Menu</NavLink>
+          <NavLink to="/admin/laporan" className={navClass}>Laporan</NavLink>
+          <NavLink to="/admin/qr" className={navClass}>QR Meja</NavLink>
         </nav>
         <div className="ml-auto flex items-center gap-3">
           {soundReady ? (
@@ -62,7 +65,7 @@ export default function AdminLayout() {
           </button>
         </div>
       </header>
-      <main className="min-h-0 flex-1">
+      <main className="min-h-0 flex-1 print:min-h-fit">
         <Outlet context={{ staff, onSessionExpired }} />
       </main>
     </div>
