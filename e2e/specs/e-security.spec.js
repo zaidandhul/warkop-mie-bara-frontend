@@ -10,6 +10,17 @@ describe('E. Keamanan API', function () {
     cookie = await adminLogin()
   })
 
+  it('header keamanan terpasang dan X-Powered-By tidak dikirim', async function () {
+    for (const path of ['/health', '/menu', '/admin/orders']) {
+      const { headers } = await api(path)
+      assert.equal(headers.get('x-powered-by'), null, `${path}: X-Powered-By masih ada`)
+      assert.equal(headers.get('x-content-type-options'), 'nosniff', path)
+      assert.equal(headers.get('x-frame-options'), 'DENY', path)
+      assert.equal(headers.get('referrer-policy'), 'no-referrer', path)
+      assert.match(headers.get('content-security-policy') ?? '', /frame-ancestors 'none'/, path)
+    }
+  })
+
   it('GET /api/admin/orders tanpa login dibalas 401', async function () {
     const result = await api('/admin/orders')
     assert.equal(result.status, 401)
