@@ -22,6 +22,8 @@ async function setSwitch(driver, wanted) {
   const toggle = await openAdminMenu(driver)
   if ((await toggle.getAttribute('aria-checked')) !== String(wanted)) await click(driver, toggle)
   await driver.wait(async () => (await toggle.getAttribute('aria-checked')) === String(wanted), 5000, 'Saklar tidak berubah')
+  // aria-checked berubah optimistis sebelum server menjawab; saklar aktif lagi setelah PATCH selesai.
+  await driver.wait(() => toggle.isEnabled(), 5000, 'Penyimpanan saklar tidak selesai')
 }
 
 async function editPrice(driver, price) {
