@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { rupiah } from '../data/menu.js'
+import { rupiah } from '../utils/price.js'
 import { ACTIONS, PAID_METHOD_LABELS, PAID_METHODS, STATUS_LABELS, formatTimeWib } from './constants.js'
 
 function minutesAgo(createdAt, now) {

@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { LEVEL_PRICE_STEP, TOPPINGS, priceFor, rupiah } from '../data/menu.js'
+import { priceFor, rupiah } from '../utils/price.js'
 
 const chip = (on) =>
   `rounded-lg border px-3 py-1.5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-bara-cyan ${
     on ? 'border-bara-cyan bg-bara-cyan text-black' : 'border-bara-line text-white'
   }`
 
-export default function ItemSheet({ item, initial = {}, onClose, onSave, toppingsCatalog = TOPPINGS, levelPriceStep = LEVEL_PRICE_STEP, noteOnly = false, saveLabel = 'Simpan', useScreenPortal = false }) {
+export default function ItemSheet({ item, initial = {}, onClose, onSave, toppingsCatalog = [], levelPriceStep = 0, noteOnly = false, saveLabel = 'Simpan', useScreenPortal = false }) {
   const [level, setLevel] = useState(initial.level ?? (item.levels ? item.levels[0] : undefined))
   const [toppings, setToppings] = useState(initial.toppings ?? [])
   const [variant, setVariant] = useState(initial.variant ?? item.options?.[0])

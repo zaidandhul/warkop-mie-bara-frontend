@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { errorMessage } from '../api/orders.js'
-import { rupiah } from '../data/menu.js'
+import { rupiah } from '../utils/price.js'
 import { getSalesReport, isUnauthorized } from './api.js'
 import { PAID_METHOD_LABELS, STATUS_LABELS, formatDateTimeWib, shiftDate, todayWib } from './constants.js'
 import { downloadSalesReport } from './reportExport.js'

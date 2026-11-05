@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { errorMessage } from '../api/orders.js'
-import { rupiah } from '../data/menu.js'
+import { rupiah } from '../utils/price.js'
 import { getAdminOrders, isUnauthorized, setOrderPayment, setOrderStatus } from './api.js'
 import { COLUMNS, todayWib } from './constants.js'
 import { playNewOrderChime } from './sound.js'

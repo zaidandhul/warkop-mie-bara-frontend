@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { OTHER_FEE, priceFor } from '../data/menu.js'
+import { priceFor } from '../utils/price.js'
 
 
 // Jumlah meja sebelum menu termuat; nilai sebenarnya dari GET /api/menu (tableCount = TABLE_COUNT backend).
@@ -31,7 +31,7 @@ export const useCartStore = create(
       tableNumber: null,
       tableCount: DEFAULT_TABLE_COUNT,
       lines: [], 
-      fee: OTHER_FEE,
+      fee: 0, // diisi dari menu (syncWithMenu)
       // Meja dari QR bisa diset sebelum menu termuat; syncWithMenu() lalu menerapkan batas tableCount.
       setTable: (n) => set({ tableNumber: normalizeTableNumber(n) }),
       add: (item, opts = {}, unitPrice = item.price, qty = 1) =>

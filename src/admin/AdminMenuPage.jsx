@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { errorMessage } from '../api/orders.js'
-import { rupiah } from '../data/menu.js'
+import { rupiah } from '../utils/price.js'
 import { getAdminMenu, isUnauthorized, updateMenuItem } from './api.js'
 
 function AvailabilitySwitch({ item, busy, onToggle }) {
