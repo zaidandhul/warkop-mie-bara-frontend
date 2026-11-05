@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { rupiah } from '../data/menu.js'
-import { ACTIONS, PAID_METHOD_LABELS, PAID_METHODS, formatTimeWib } from './constants.js'
+import { ACTIONS, PAID_METHOD_LABELS, PAID_METHODS, STATUS_LABELS, formatTimeWib } from './constants.js'
 
 function minutesAgo(createdAt, now) {
   const minutes = Math.max(0, Math.floor((now - new Date(createdAt).getTime()) / 60000))
@@ -26,6 +26,33 @@ function ItemLine({ item }) {
         <p className="ml-9 mt-0.5 rounded bg-amber-400/15 px-2 py-0.5 text-sm text-amber-200">📝 {item.options.note}</p>
       )}
     </li>
+  )
+}
+
+function historyLabel(entry) {
+  if (entry.action === 'order_status') return STATUS_LABELS[entry.newValue] ?? entry.newValue
+  return entry.newValue ? `Lunas · ${PAID_METHOD_LABELS[entry.newValue] ?? entry.newValue}` : 'Batal lunas'
+}
+
+// "Diubah oleh" (perubahan terakhir) dan riwayat lengkap: siapa mengubah status/pembayaran dan kapan.
+function OrderHistory({ order }) {
+  const entries = [
+    ...(order.createdBy ? [{ label: 'Dibuat di kasir', staff: order.createdBy, at: order.createdAt }] : []),
+    ...(order.history ?? []).map((entry) => ({ label: historyLabel(entry), staff: entry.staff, at: entry.at })),
+  ]
+  if (!entries.length) return null
+  const last = entries[entries.length - 1]
+  return (
+    <details className="mt-1 text-xs text-white/50">
+      <summary data-testid="order-changed-by" className="cursor-pointer">
+        Diubah oleh {last.staff ?? 'staf terhapus'} · {formatTimeWib(last.at)} ({last.label})
+      </summary>
+      <ol data-testid="order-history" className="mt-1 space-y-0.5 pl-3">
+        {entries.map((entry, index) => (
+          <li key={index}>{formatTimeWib(entry.at)} · {entry.label} · {entry.staff ?? 'staf terhapus'}</li>
+        ))}
+      </ol>
+    </details>
   )
 }
 
@@ -109,6 +136,7 @@ export default function OrderCard({ order, now, isNew, busy, onChangeStatus, onC
         <span className="text-base font-bold">{rupiah(order.total)}</span>
       </div>
       <p className="mt-1 text-xs text-white/40">{order.id}</p>
+      <OrderHistory order={order} />
 
       {(primary || cancel) && (
         <div className="mt-3 flex gap-2">

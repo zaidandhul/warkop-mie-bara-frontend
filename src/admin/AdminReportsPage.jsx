@@ -3,10 +3,9 @@ import { useOutletContext } from 'react-router-dom'
 import { errorMessage } from '../api/orders.js'
 import { rupiah } from '../data/menu.js'
 import { getSalesReport, isUnauthorized } from './api.js'
-import { PAID_METHOD_LABELS, formatDateTimeWib, shiftDate, todayWib } from './constants.js'
+import { PAID_METHOD_LABELS, STATUS_LABELS, formatDateTimeWib, shiftDate, todayWib } from './constants.js'
 import { downloadSalesReport } from './reportExport.js'
 
-const STATUS_LABELS = { menunggu: 'Menunggu', diproses: 'Diproses', siap: 'Siap', selesai: 'Selesai', dibatalkan: 'Dibatalkan' }
 const pad = (hour) => String(hour).padStart(2, '0')
 
 function Stat({ label, value, testId, tone = 'text-white' }) {

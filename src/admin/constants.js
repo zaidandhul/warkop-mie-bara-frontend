@@ -5,6 +5,10 @@ export const COLUMNS = [
   { status: 'selesai', label: 'Selesai', accent: 'border-white/30 text-white/60' },
 ]
 
+export const STATUS_LABELS = {
+  menunggu: 'Menunggu', diproses: 'Diproses', siap: 'Siap', selesai: 'Selesai', dibatalkan: 'Dibatalkan',
+}
+
 // Sama dengan TRANSITIONS di backend/src/services/admin.js (backend tetap yang menentukan).
 export const ACTIONS = {
   menunggu: [
