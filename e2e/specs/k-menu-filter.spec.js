@@ -123,7 +123,8 @@ describe('K. Filter, pencarian, dan urutan menu', function () {
     await driver.wait(until.stalenessOf(sheet), 5000)
     await clickTestId(driver, 'cart-button')
     await waitUrl(driver, '/view-order')
-    await click(driver, await driver.findElement(By.xpath('//a[contains(., "Tambah Item")]')))
+    // React Router 7 merender navigasi dalam startTransition: tunggu link muncul, jangan langsung dicari.
+    await click(driver, await waitVisible(driver, By.xpath('//a[contains(., "Tambah Item")]')))
     await waitVisible(driver, byTestId('menu-results'))
 
     assert.equal(await driver.findElement(byTestId('menu-search')).getAttribute('value'), 'te')
