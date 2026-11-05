@@ -55,7 +55,7 @@ export default function HistoryPage() {
           {!loading && !error && orders.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-bara-panel text-3xl">📝</div>
-              <p className="mt-4 text-sm text-white/60">Belum ada pesanan di sesi ini.</p>
+              <p className="mt-4 text-sm text-white/60">Belum ada pesanan dari perangkat ini dalam 24 jam terakhir.</p>
               <Link to="/order" className="mt-4 rounded-lg border border-bara-cyan px-4 py-2 text-sm font-semibold text-bara-cyan">Lihat Menu</Link>
             </div>
           )}

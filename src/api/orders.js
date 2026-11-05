@@ -4,15 +4,47 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
   timeout: 10000,
 })
+// Riwayat pesanan pelanggan (tanpa login): kode pesanan disimpan di localStorage selama 24 jam, jadi
+// tetap ada walau tab ditutup atau dibuka di tab lain. Format: [{ id, at }] (at = epoch ms).
 const ORDER_HISTORY_KEY = 'mie-bara-order-history'
+const ORDER_HISTORY_TTL_MS = 24 * 60 * 60 * 1000
+const MAX_HISTORY = 30
 
-function readOrderIds() {
+function safeParse(text) {
   try {
-    const ids = JSON.parse(sessionStorage.getItem(ORDER_HISTORY_KEY) || '[]')
-    return Array.isArray(ids) ? ids.filter((id) => typeof id === 'string') : []
+    const value = JSON.parse(text || '[]')
+    return Array.isArray(value) ? value : []
   } catch {
     return []
   }
+}
+
+function readHistory(now = Date.now()) {
+  let entries = []
+  try {
+    entries = safeParse(localStorage.getItem(ORDER_HISTORY_KEY))
+    // Versi lama menyimpan daftar kode di sessionStorage; pindahkan sekali.
+    const legacy = safeParse(sessionStorage.getItem(ORDER_HISTORY_KEY)).filter((id) => typeof id === 'string')
+    if (legacy.length) {
+      entries = [...entries, ...legacy.map((id) => ({ id, at: now }))]
+      sessionStorage.removeItem(ORDER_HISTORY_KEY)
+    }
+  } catch { /* storage diblokir: riwayat kosong */ }
+  const seen = new Set()
+  return entries
+    .filter((entry) => entry && typeof entry.id === 'string' && Number.isFinite(entry.at) && now - entry.at < ORDER_HISTORY_TTL_MS)
+    .filter((entry) => !seen.has(entry.id) && seen.add(entry.id))
+    .slice(0, MAX_HISTORY)
+}
+
+function writeHistory(entries) {
+  try { localStorage.setItem(ORDER_HISTORY_KEY, JSON.stringify(entries)) } catch { /* Order sudah tersimpan di backend. */ }
+}
+
+function readOrderIds() {
+  const entries = readHistory()
+  writeHistory(entries) // buang entri kedaluwarsa
+  return entries.map((entry) => entry.id)
 }
 
 export async function getMenu() {
@@ -49,8 +81,7 @@ export async function getOrder(id) {
 
 export function rememberOrder(id) {
   if (typeof id !== 'string' || !id) return
-  const ids = [id, ...readOrderIds().filter((knownId) => knownId !== id)].slice(0, 30)
-  try { sessionStorage.setItem(ORDER_HISTORY_KEY, JSON.stringify(ids)) } catch { /* Order sudah tersimpan di backend. */ }
+  writeHistory([{ id, at: Date.now() }, ...readHistory().filter((entry) => entry.id !== id)].slice(0, MAX_HISTORY))
 }
 
 export async function getOrderHistory() {
