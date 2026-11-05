@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "dev:e2e": "vite --mode test --port 5174 --strictPort",
     "test:e2e": "mocha --config e2e/.mocharc.cjs",
-    "test": "node --test test/unit"
+    "test": "node --test \"test/unit/*.test.js\""
   },
   "dependencies": {
     "axios": "^1.7.0",
