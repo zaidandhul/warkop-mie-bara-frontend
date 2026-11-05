@@ -7,7 +7,7 @@ kelola menu, keamanan API, status pembayaran, QR meja, pesanan kasir, dan lapora
 
 ## Prasyarat
 
-- Node.js 20 atau lebih baru dan Google Chrome. Selenium Manager mengunduh chromedriver yang cocok
+- Node.js 22 atau lebih baru dan Google Chrome. Selenium Manager mengunduh chromedriver yang cocok
   secara otomatis saat pertama kali dijalankan (butuh internet sekali).
 - MySQL/MariaDB berjalan (kredensial diambil dari `backend/.env`).
 - `npm install` di `backend/` dan `frontend/`.
