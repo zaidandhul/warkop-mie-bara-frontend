@@ -47,4 +47,17 @@ describe('N. Riwayat pesanan dan profil pelanggan', function () {
     assert.deepEqual(await codesOnPage(driver), [])
     assert.equal(await driver.executeScript('return localStorage.getItem(arguments[0])', HISTORY_KEY), '[]')
   })
+
+  it('fitur di luar scope tidak tampil: tab Reservasi, pilihan bahasa, tombol Masuk pelanggan', async function () {
+    await driver.get(url('/history'))
+    await waitText(driver, { css: 'h1' }, (text) => text === 'Riwayat Pesanan')
+    assert.doesNotMatch(await driver.findElement({ css: 'body' }).getText(), /Reservasi/)
+
+    await driver.get(url('/profile'))
+    const links = await waitText(driver, byTestId('profile-links'), (text) => text.includes('Kebijakan Privasi'))
+    assert.match(links, /Riwayat Pesanan/)
+    assert.match(links, /Kebijakan Privasi/)
+    const page = await driver.findElement({ css: 'body' }).getText()
+    for (const hidden of [/Bahasa/, /English/, /Masuk/]) assert.doesNotMatch(page, hidden)
+  })
 })
