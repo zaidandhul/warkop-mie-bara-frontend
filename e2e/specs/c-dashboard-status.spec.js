@@ -70,6 +70,9 @@ describe('C. Status pesanan di dashboard', function () {
   it('halaman status pelanggan untuk pesanan yang dibatalkan menampilkan status terbaru', async function () {
     await driver.get(url(`/status/${cancelledCode}`))
     await waitText(driver, byTestId('status-title'), (text) => text === 'Pesanan dibatalkan')
+    const notice = await waitVisible(driver, byTestId('status-cancelled'))
+    assert.match(await textOf(notice), /hubungi kasir/)
+    assert.equal((await driver.findElements(byTestId('status-steps'))).length, 0, 'Langkah progres masih tampil untuk pesanan dibatalkan')
   })
 
   it('halaman status pelanggan untuk pesanan yang selesai menampilkan "Selesai"', async function () {
@@ -77,5 +80,26 @@ describe('C. Status pesanan di dashboard', function () {
     await waitVisible(driver, By.xpath('//p[contains(., "Total:")]')) // data pesanan sudah dimuat
     const page = await textOf(await driver.findElement(By.css('body')))
     assert.match(page, /Selesai/, `Halaman status tidak menampilkan "Selesai". Isi langkah: "${await textOf(await driver.findElement(byTestId('status-steps')))}"`)
+    assert.equal(await (await driver.findElement(byTestId('status-step-selesai'))).getAttribute('aria-current'), 'step')
+  })
+
+  it('polling berhenti untuk status selesai/dibatalkan, tetap berjalan untuk pesanan aktif', async function () {
+    // Jumlah request GET /api/orders/<kode> yang dikirim halaman dalam ~6 detik (polling tiap 5 detik).
+    const pollsDuring = async (code) => {
+      await driver.get(url(`/status/${code}`))
+      await waitVisible(driver, By.xpath('//p[contains(., "Total:")]'))
+      const count = () => driver.executeScript(
+        'return performance.getEntriesByType("resource").filter((e) => e.name.includes("/api/orders/")).length'
+      )
+      const before = await count()
+      await driver.sleep(6500)
+      return (await count()) - before
+    }
+    assert.equal(await pollsDuring(completedCode), 0, 'Masih polling untuk pesanan selesai')
+    assert.equal(await pollsDuring(cancelledCode), 0, 'Masih polling untuk pesanan dibatalkan')
+
+    const active = await createOrder({ name: `E2E Polling ${runId}`, items: [{ itemId: 'milo', qty: 1 }] })
+    assert.ok(await pollsDuring(active.id) >= 1, 'Tidak polling untuk pesanan yang masih menunggu')
+    assert.equal(await (await driver.findElement(byTestId('status-page'))).getAttribute('data-polling'), 'true')
   })
 })
