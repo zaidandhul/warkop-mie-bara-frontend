@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
-import { api } from './api.js'
+import { adminLogin, api, closeActiveOrders } from './api.js'
 import { activeDrivers } from './browser.js'
 import { config } from './config.js'
 
@@ -24,6 +24,12 @@ export const mochaHooks = {
     }
     const page = await fetch(config.baseUrl).catch(() => null)
     if (!page?.ok) throw new Error(`Frontend uji tidak bisa dibuka di ${config.baseUrl}. Jalankan "npm run dev:e2e".`)
+
+    // Pesanan uji dari run sebelumnya (hari ini) ditutup, supaya batas pesanan aktif per meja
+    // (MAX_ACTIVE_ORDERS_PER_TABLE) tidak sudah penuh sebelum test dimulai. closeActiveOrders menolak
+    // berjalan kecuali backend melaporkan database kopi_miebara_test (assertTestDatabase).
+    const closed = await closeActiveOrders(await adminLogin())
+    if (closed) console.log(`  (${closed} pesanan aktif sisa run sebelumnya ditutup)`)
   },
 
   async afterEach() {
