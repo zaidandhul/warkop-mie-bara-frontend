@@ -52,10 +52,28 @@ export const setStatus = (cookie, code, status) =>
 export const setPayment = (cookie, code, method) =>
   api(`/admin/orders/${encodeURIComponent(code)}/payment`, { method: 'PATCH', cookie, body: { method } })
 
+// Satu-satunya database yang boleh diubah massal oleh helper test.
+export const TEST_DATABASE = 'kopi_miebara_test'
+
+// Menolak (throw) kecuali backend melaporkan sedang memakai TEST_DATABASE. Hasil OK disimpan.
+let testDatabaseConfirmed = false
+export async function assertTestDatabase() {
+  if (testDatabaseConfirmed) return
+  const health = await api('/health')
+  if (health.json?.testMode !== true || health.json?.testDatabase !== TEST_DATABASE) {
+    throw new Error(
+      `Dibatalkan: backend di ${config.apiUrl} tidak memakai database ${TEST_DATABASE} ` +
+      `(dilaporkan: ${health.json?.testDatabase ?? 'tidak ada'}). Pembersihan data uji tidak dijalankan.`
+    )
+  }
+  testDatabaseConfirmed = true
+}
+
 // Tutup pesanan hari ini yang belum selesai/dibatalkan (opsional hanya untuk satu meja): yang lunas
 // diselesaikan, sisanya dibatalkan. Dipakai supaya batas pesanan aktif per meja tidak tercapai oleh
-// data uji dari run sebelumnya.
+// data uji dari run sebelumnya. Hanya berjalan terhadap TEST_DATABASE.
 export async function closeActiveOrders(cookie, table) {
+  await assertTestDatabase()
   const NEXT = { menunggu: 'diproses', diproses: 'siap', siap: 'selesai' }
   const active = (await adminOrders(cookie))
     .filter((order) => !['selesai', 'dibatalkan'].includes(order.status) && (!table || order.tableNumber === table))
