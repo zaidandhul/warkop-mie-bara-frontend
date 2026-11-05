@@ -82,14 +82,14 @@ export async function waitUrl(driver, part, timeout = DEFAULT_WAIT) {
   await driver.wait(until.urlContains(part), timeout, `URL tidak berisi "${part}"`)
 }
 
-// Login lewat form. Dengan password benar, menunggu sampai dashboard (header staf) tampil,
-// jadi cookie sesi sudah terpasang sebelum langkah berikutnya.
-export async function loginUi(driver, password = config.adminPass) {
+// Login lewat form. Dengan password benar (atau akun selain admin uji), menunggu sampai dashboard
+// (header staf) tampil, jadi cookie sesi sudah terpasang sebelum langkah berikutnya.
+export async function loginUi(driver, password = config.adminPass, username = config.adminUser) {
   await driver.get(url('/admin/login'))
-  await typeInto(await waitVisible(driver, By.css('input[autocomplete="username"]')), config.adminUser)
+  await typeInto(await waitVisible(driver, By.css('input[autocomplete="username"]')), username)
   await typeInto(await waitVisible(driver, By.css('input[autocomplete="current-password"]')), password)
   await click(driver, await driver.findElement(By.css('button[type="submit"]')))
-  if (password === config.adminPass) await waitVisible(driver, byTestId('staff-label'))
+  if (password === config.adminPass || username !== config.adminUser) await waitVisible(driver, byTestId('staff-label'))
 }
 
 export { By, Key, until }

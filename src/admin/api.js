@@ -49,4 +49,25 @@ export async function getSalesReport(from, to) {
   return (await api.get('/admin/reports/sales', { params: { from, to } })).data
 }
 
+// Kelola akun staf (khusus admin) dan ganti password sendiri.
+export async function getStaff() {
+  return (await api.get('/admin/staff')).data.staff
+}
+
+export async function createStaff(staff) {
+  return (await api.post('/admin/staff', staff)).data
+}
+
+export async function updateStaff(id, changes) {
+  return (await api.patch(`/admin/staff/${id}`, changes)).data
+}
+
+export async function resetStaffPassword(id, password) {
+  await api.post(`/admin/staff/${id}/password`, { password })
+}
+
+export async function changeOwnPassword(currentPassword, newPassword) {
+  await api.post('/admin/me/password', { currentPassword, newPassword })
+}
+
 export const isUnauthorized = (error) => error?.response?.status === 401

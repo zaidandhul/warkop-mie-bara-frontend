@@ -48,6 +48,7 @@ export default function AdminLayout() {
           <NavLink to="/admin/menu" className={navClass}>Menu</NavLink>
           <NavLink to="/admin/laporan" className={navClass}>Laporan</NavLink>
           <NavLink to="/admin/qr" className={navClass}>QR Meja</NavLink>
+          {staff.isAdmin && <NavLink to="/admin/staf" className={navClass}>Staf</NavLink>}
         </nav>
         <div className="ml-auto flex items-center gap-3">
           {soundReady ? (
@@ -57,9 +58,9 @@ export default function AdminLayout() {
               🔕 Aktifkan suara
             </button>
           )}
-          <span className="text-sm text-white/70" data-testid="staff-label">
-            {staff.username} · <span className="font-semibold text-white">Admin</span>
-          </span>
+          <NavLink to="/admin/akun" title="Akun saya: ganti password" className="text-sm text-white/70 hover:text-white" data-testid="staff-label">
+            {staff.username} · <span className="font-semibold text-white">{staff.isAdmin ? 'Admin' : 'Staf'}</span>
+          </NavLink>
           <button data-testid="logout" onClick={handleLogout} className="rounded-lg border border-bara-line px-4 py-2.5 text-sm hover:bg-white/10">
             Keluar
           </button>
