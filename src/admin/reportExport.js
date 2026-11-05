@@ -1,6 +1,5 @@
-import { PAID_METHOD_LABELS, formatDateTimeWib } from './constants.js'
+import { PAID_METHOD_LABELS, STATUS_LABELS, formatDateTimeWib } from './constants.js'
 
-const STATUS_LABELS = { menunggu: 'Menunggu', diproses: 'Diproses', siap: 'Siap', selesai: 'Selesai', dibatalkan: 'Dibatalkan' }
 const SOURCE_LABELS = { pelanggan: 'QR pelanggan', kasir: 'Kasir' }
 const RUPIAH = '#,##0'
 

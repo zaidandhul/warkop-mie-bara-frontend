@@ -11,7 +11,7 @@ const REFRESH_MS = 10_000
 const NEW_HIGHLIGHT_MS = 60_000
 
 export default function AdminOrdersPage() {
-  const { onSessionExpired } = useOutletContext()
+  const { staff, onSessionExpired } = useOutletContext()
   const [date, setDate] = useState(todayWib)
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
@@ -116,13 +116,21 @@ export default function AdminOrdersPage() {
     }
   }
 
+  // Entri riwayat lokal supaya "Diubah oleh" langsung tampil; polling berikutnya memuat data server.
+  const historyWith = (order, action, oldValue, newValue) => [
+    ...(order.history ?? []),
+    { action, oldValue, newValue, staff: staff?.username, at: new Date().toISOString() },
+  ]
   const changeStatus = (order, status) => runOrderAction(
-    order, async () => { await setOrderStatus(order.id, status); return { status } }, 'Gagal mengubah status pesanan.'
+    order, async () => {
+      await setOrderStatus(order.id, status)
+      return { status, history: historyWith(order, 'order_status', order.status, status) }
+    }, 'Gagal mengubah status pesanan.'
   )
   const changePayment = (order, method) => runOrderAction(
     order, async () => {
       const { paidAt, paidMethod } = await setOrderPayment(order.id, method)
-      return { paidAt, paidMethod }
+      return { paidAt, paidMethod, history: historyWith(order, 'order_payment', order.paidMethod, method) }
     }, 'Gagal menyimpan status pembayaran.'
   )
 
