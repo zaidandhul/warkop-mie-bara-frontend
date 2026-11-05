@@ -21,7 +21,7 @@ export const config = {
 
 export const url = (path) => `${config.baseUrl}${path}`
 
-// Sama dengan rupiah() di src/data/menu.js.
+// Sama dengan rupiah() di src/utils/price.js.
 export const rupiah = (n) => 'Rp' + n.toLocaleString('id-ID')
 
 // Penanda unik per run supaya data uji dari run sebelumnya tidak tercampur.

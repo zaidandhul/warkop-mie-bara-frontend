@@ -2,7 +2,6 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import MenuPage from './pages/MenuPage.jsx'
 import OrderReviewPage from './pages/OrderReviewPage.jsx'
 import PaymentPage from './pages/PaymentPage.jsx'
-import OrderSuccessPage from './pages/OrderSuccessPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import HistoryPage from './pages/HistoryPage.jsx'
 import StatusPage from './pages/StatusPage.jsx'
@@ -14,6 +13,8 @@ import AdminMenuPage from './admin/AdminMenuPage.jsx'
 import AdminQrPage from './admin/AdminQrPage.jsx'
 import AdminNewOrderPage from './admin/AdminNewOrderPage.jsx'
 import AdminReportsPage from './admin/AdminReportsPage.jsx'
+import AdminStaffPage from './admin/AdminStaffPage.jsx'
+import AdminAccountPage from './admin/AdminAccountPage.jsx'
 
 export default function App() {
   const location = useLocation()
@@ -25,7 +26,6 @@ export default function App() {
         <Route path="/order" element={<MenuPage />} />
         <Route path="/view-order" element={<OrderReviewPage />} />
         <Route path="/payment" element={<PaymentPage />} />
-        <Route path="/order-success/:id" element={<OrderSuccessPage />} />
         <Route path="/status/:id" element={<StatusPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/history" element={<HistoryPage />} />
@@ -39,6 +39,8 @@ export default function App() {
           <Route path="menu" element={<AdminMenuPage />} />
           <Route path="laporan" element={<AdminReportsPage />} />
           <Route path="qr" element={<AdminQrPage />} />
+          <Route path="staf" element={<AdminStaffPage />} />
+          <Route path="akun" element={<AdminAccountPage />} />
         </Route>
       </Routes>
     </div>

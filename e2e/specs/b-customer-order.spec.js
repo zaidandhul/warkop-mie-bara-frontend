@@ -99,6 +99,10 @@ describe('B. Pesanan pelanggan', function () {
     await waitUrl(driver, '/history')
     const code = await waitText(driver, byTestId('history-order-code'), (text) => text.length > 0)
     assert.match(code, /^MB-[0-9A-F]{20}$/)
+    // Riwayat disimpan di localStorage (bukan sessionStorage), dengan waktu simpan untuk TTL 24 jam.
+    const stored = JSON.parse(await driver.executeScript("return localStorage.getItem('mie-bara-order-history')"))
+    assert.equal(stored[0].id, code)
+    assert.ok(Date.now() - stored[0].at < 60_000)
     const saved = await ordersByName(cookie, name)
     assert.equal(saved.length, 1)
     assert.equal(saved[0].id, code)

@@ -6,7 +6,6 @@ import { useCartStore } from '../store/cartStore.js'
 import ItemSheet from '../components/ItemSheet.jsx'
 import CartSyncNotice, { mergeCartChanges } from '../components/CartSyncNotice.jsx'
 import { SORTS, filterMenu, useMenuViewStore } from '../store/menuViewStore.js'
-import { TOPPINGS } from '../data/menu.js'
 import logo from '../logo.png'
 
 const rupiah = (n) => 'Rp' + n.toLocaleString('id-ID')
@@ -237,7 +236,7 @@ export default function MenuPage() {
         <ItemSheet
           key={selectedItem.id}
           item={selectedItem}
-          toppingsCatalog={CONFIGURABLE_FOOD_CATEGORIES.includes(selectedItem.categoryId) && catalog.toppings.length === 0 ? TOPPINGS : catalog.toppings}
+          toppingsCatalog={catalog.toppings}
           levelPriceStep={catalog.levelPriceStep}
           noteOnly={NOTE_ONLY_CATEGORIES.includes(selectedItem.categoryId)}
           useScreenPortal={CONFIGURABLE_FOOD_CATEGORIES.includes(selectedItem.categoryId) || NOTE_ONLY_CATEGORIES.includes(selectedItem.categoryId)}
