@@ -1,0 +1,24 @@
+# CI frontend: install, unit test, build produksi.
+# E2E Selenium (e2e/) tidak dijalankan di sini: butuh backend dari repo lain, MySQL berisi database uji
+# dan akun admin, serta Chrome; jalankan secara lokal (lihat e2e/README.md).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Unit test
+        run: npm test
+      - name: Build produksi
+        run: npm run build
