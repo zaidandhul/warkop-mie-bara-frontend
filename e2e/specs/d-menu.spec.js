@@ -71,6 +71,28 @@ describe('D. Kelola menu', function () {
     await waitVisible(driver, byTestId(`menu-card-${TOGGLE_ITEM}`))
   })
 
+  it('saklar gagal disimpan (jaringan putus): kembali ke posisi semula dan error terlihat di layar', async function () {
+    const toggle = await openAdminMenu(driver)
+    assert.equal(await toggle.getAttribute('aria-checked'), 'true')
+    await driver.sendDevToolsCommand('Network.enable', {})
+    await driver.sendDevToolsCommand('Network.setBlockedURLs', { urls: ['*/api/admin/menu/*'] })
+    try {
+      await click(driver, toggle)
+      const message = await waitText(driver, byTestId('menu-error'), (text) => text.length > 0)
+      assert.match(message, /Gagal menyimpan Milo/)
+      await driver.wait(() => toggle.isEnabled(), 5000)
+      assert.equal(await toggle.getAttribute('aria-checked'), 'true', 'Saklar tidak kembali ke Tersedia')
+      const inView = await driver.executeScript(
+        'const r = arguments[0].getBoundingClientRect(); return r.top >= 0 && r.bottom <= window.innerHeight',
+        await driver.findElement(byTestId('menu-error'))
+      )
+      assert.equal(inView, true, 'Pesan error di luar layar')
+    } finally {
+      await driver.sendDevToolsCommand('Network.setBlockedURLs', { urls: [] })
+    }
+    assert.equal((await adminMenuItem(cookie, TOGGLE_ITEM)).isActive, true, 'Server ikut berubah')
+  })
+
   it('ubah harga lewat ✎: harga baru tampil di halaman pelanggan, lalu dikembalikan', async function () {
     const originalPrice = original.price.price
     const newPrice = originalPrice + 1000

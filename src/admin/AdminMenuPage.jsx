@@ -109,7 +109,7 @@ export default function AdminMenuPage() {
     } catch (saveError) {
       setItems((current) => current.map((i) => (i.id === item.id ? item : i)))
       if (isUnauthorized(saveError)) onSessionExpired()
-      else setError(errorMessage(saveError, `Gagal menyimpan ${item.name}.`))
+      else setError(`Gagal menyimpan ${item.name}: ${errorMessage(saveError, 'coba lagi.')}`)
       return false
     } finally {
       setBusy(item.id, false)
@@ -141,6 +141,17 @@ export default function AdminMenuPage() {
 
   return (
     <div className="h-full overflow-y-auto px-5 py-4">
+      {/* Fixed di bawah layar: tetap terlihat walau staf sedang menggulir jauh dari atas halaman. */}
+      {error && (
+        <div
+          role="alert"
+          data-testid="menu-error"
+          className="fixed inset-x-0 bottom-4 z-50 mx-auto flex w-fit max-w-[90vw] items-center gap-3 rounded-xl border border-bara-chili bg-[#2a0f0e] px-4 py-3 text-sm text-white shadow-lg"
+        >
+          <span>{error}</span>
+          <button onClick={() => setError('')} aria-label="Tutup pesan" className="min-h-10 px-2 text-white/70">✕</button>
+        </div>
+      )}
       <div className="mx-auto max-w-5xl">
         <div className="flex flex-wrap items-center gap-3">
           <input
@@ -157,8 +168,6 @@ export default function AdminMenuPage() {
             Hanya yang habis ({soldOutCount})
           </button>
         </div>
-
-        {error && <p role="alert" className="mt-3 rounded-lg border border-bara-chili/50 bg-bara-chili/10 px-3 py-2 text-sm text-bara-chili">{error}</p>}
 
         {loading ? (
           <p className="mt-6 text-white/60">Memuat menu…</p>
