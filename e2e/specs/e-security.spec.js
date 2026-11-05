@@ -21,6 +21,17 @@ describe('E. Keamanan API', function () {
     }
   })
 
+  it('login: 5 kali gagal untuk username yang sama → percobaan ke-6 dibalas 429', async function () {
+    // Username unik per run, jadi akun e2e-admin tidak ikut terkunci.
+    const body = { username: `bukan-admin-${runId}`, password: 'salah-sekali' }
+    for (let i = 1; i <= 5; i += 1) {
+      assert.equal((await api('/auth/login', { method: 'POST', body })).status, 401, `percobaan ${i}`)
+    }
+    const locked = await api('/auth/login', { method: 'POST', body })
+    assert.equal(locked.status, 429)
+    assert.match(locked.json.error, /Terlalu banyak percobaan login/)
+  })
+
   it('GET /api/admin/orders tanpa login dibalas 401', async function () {
     const result = await api('/admin/orders')
     assert.equal(result.status, 401)
