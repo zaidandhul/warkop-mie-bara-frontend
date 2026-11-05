@@ -14,7 +14,7 @@ export const mochaHooks = {
     try {
       health = await api('/health')
     } catch (error) {
-      throw new Error(`Backend uji tidak bisa dihubungi di ${config.apiUrl} (${error.message}). Jalankan "npm run dev:test" di backend.`)
+      throw new Error(`Backend uji tidak bisa dihubungi di ${config.apiUrl} (${error.message}). Jalankan "npm run dev:test" di backend.`, { cause: error })
     }
     if (health.status !== 200 || health.json?.testMode !== true) {
       throw new Error(

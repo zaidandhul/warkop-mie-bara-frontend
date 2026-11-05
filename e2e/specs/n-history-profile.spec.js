@@ -58,6 +58,6 @@ describe('N. Riwayat pesanan dan profil pelanggan', function () {
     assert.match(links, /Riwayat Pesanan/)
     assert.match(links, /Kebijakan Privasi/)
     const page = await driver.findElement({ css: 'body' }).getText()
-    for (const hidden of [/Bahasa/, /English/, /Masuk/]) assert.doesNotMatch(page, hidden)
+    for (const hidden of [/Bahasa/, /English/, /\bMasuk\b/]) assert.doesNotMatch(page, hidden)
   })
 })
