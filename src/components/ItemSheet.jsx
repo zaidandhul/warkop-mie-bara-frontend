@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { priceFor, rupiah } from '../utils/price.js'
+import MenuImage from './MenuImage.jsx'
+import { menuImage } from '../utils/menuImages.js'
 
 const chip = (on) =>
   `rounded-lg border px-3 py-1.5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-bara-cyan ${
@@ -26,6 +28,9 @@ export default function ItemSheet({ item, initial = {}, onClose, onSave, topping
         onClick={(e) => e.stopPropagation()}
         className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-t-2xl border-t border-bara-line bg-bara-panel p-4"
       >
+        {menuImage(item.id) && (
+          <MenuImage item={item} eager className="mb-4 h-48 w-full rounded-xl object-cover" />
+        )}
         <h3 className="text-lg font-bold">{item.name}</h3>
         {item.desc && <p className="mt-1 text-xs text-white/60">{item.desc}</p>}
 
