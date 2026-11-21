@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { getMenu } from '../api/orders.js'
 import { useCartStore } from '../store/cartStore.js'
 import ItemSheet from '../components/ItemSheet.jsx'
+import MenuImage from '../components/MenuImage.jsx'
 import CartSyncNotice, { mergeCartChanges } from '../components/CartSyncNotice.jsx'
 import { SORTS, filterMenu, useMenuViewStore } from '../store/menuViewStore.js'
 import logo from '../logo.png'
@@ -16,7 +17,11 @@ const NOTE_ONLY_CATEGORIES = ['camilan', 'signature-drink', 'all-variant-drink']
 function MenuCard({ item, onAdd, categoryId, wide = false }) {
   return (
     <div className={wide ? 'min-w-0' : 'w-36 shrink-0'} data-testid={`menu-card-${item.id}`}>
-      <div className={`flex h-28 items-center justify-center rounded-lg bg-bara-panel text-3xl ${wide ? 'w-full' : 'w-36'}`}>🍜</div>
+      <MenuImage
+        item={item}
+        className={`h-28 rounded-lg object-cover ${wide ? 'w-full' : 'w-36'}`}
+        fallbackClassName={`h-28 rounded-lg ${wide ? 'w-full' : 'w-36'}`}
+      />
       <p className="mt-2 text-sm font-semibold leading-tight">{item.name}</p>
       <p className="mt-1 text-sm text-white/70" data-testid={`menu-price-${item.id}`}>{rupiah(item.price)}</p>
       <button
@@ -189,8 +194,23 @@ export default function MenuPage() {
         </div>
       )}
 
-      {/* Urutan default: per kategori (baris geser). Urutan lain: satu daftar lintas kategori. */}
-      {view.grouped ? view.sections.map((c) => (
+      {/* Kategori aktif: tiga baris ke bawah lalu lanjut ke samping. Tampilan Semua tetap per kategori. */}
+      {view.grouped && activeCategory ? view.sections.map((c) => (
+        <section key={c.id} data-category-id={c.id} className="px-4 pt-6">
+          <div className="mb-3 flex items-baseline justify-between">
+            <h2 className="text-base font-bold">{c.name}</h2>
+            <span className="text-xs text-white/50">{c.items.length} menu</span>
+          </div>
+          <div
+            data-testid="category-menu-results"
+            className="grid grid-flow-col grid-rows-3 auto-cols-[9rem] gap-x-3 gap-y-5 overflow-x-auto no-scrollbar pb-2"
+          >
+            {c.items.map((i) => (
+              <MenuCard key={i.id} item={i} categoryId={c.id} onAdd={openItemOptions} />
+            ))}
+          </div>
+        </section>
+      )) : view.grouped ? view.sections.map((c) => (
         <section key={c.id} data-category-id={c.id} className="px-4 pt-6">
           <h2 className="mb-3 text-base font-bold">{c.name}</h2>
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { getMenu } from '../api/orders.js'
 import { useCartStore } from '../store/cartStore.js'
 import CartSyncNotice, { mergeCartChanges } from '../components/CartSyncNotice.jsx'
+import MenuImage from '../components/MenuImage.jsx'
 
 const rupiah = (n) => 'Rp' + n.toLocaleString('id-ID')
 
@@ -43,6 +44,7 @@ export default function OrderReviewPage() {
               onClick={() => add(i, {}, i.price)}
               className="flex w-36 shrink-0 flex-col items-start rounded-lg border border-bara-line bg-bara-panel p-2 text-left"
             >
+              <MenuImage item={i} className="mb-2 h-20 w-full rounded-md object-cover" fallbackClassName="mb-2 h-20 w-full rounded-md" />
               <span className="text-sm font-medium">{i.name}</span>
               <span className="mt-1 text-xs text-white/60">{rupiah(i.price)}</span>
               <span className="mt-2 self-end rounded border border-bara-cyan px-2 py-0.5 text-xs text-bara-cyan">+ Tambah</span>
@@ -65,8 +67,9 @@ export default function OrderReviewPage() {
           <ul className="divide-y divide-bara-line">
             {lines.map((l) => (
               <li key={l.key} className="py-3" data-testid="cart-line" data-item-id={l.item.id}>
-                <div className="flex items-start justify-between">
-                  <div>
+                <div className="flex items-start gap-3">
+                  <MenuImage item={l.item} className="h-16 w-16 shrink-0 rounded-lg object-cover" fallbackClassName="h-16 w-16 shrink-0 rounded-lg text-xl" />
+                  <div className="min-w-0 flex-1">
                     <p className="font-semibold">{l.item.name}</p>
                     {l.opts?.level && <p className="text-xs text-white/60">Level {l.opts.level}</p>}
                     {l.opts?.variant && <p className="text-xs text-white/60">Pilihan: {l.opts.variant}</p>}
